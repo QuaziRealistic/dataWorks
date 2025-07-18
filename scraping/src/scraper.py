@@ -8,7 +8,7 @@ from time import time
 from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
 
 dataDir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-linksFile = os.path.join(dataDir, "foundLinks.txt")
+linksFile = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "crawling", "data", "foundLinks.txt")
 outputFile = os.path.join(dataDir, "scrapedData.json")
 
 
