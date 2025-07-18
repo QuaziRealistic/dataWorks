@@ -29,7 +29,6 @@ def extractAllContent(soup):
         }
     }
 
-
 def scrapePage(url):
     
     try:
