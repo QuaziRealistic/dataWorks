@@ -1,0 +1,62 @@
+
+#########################################   utils.py  #################################################
+Description:
+This module provides utility functions used across the web crawling and scraping components.
+It focuses on respectful and reliable HTTP requests by handling:
+- User-Agent randomization to mimic different browsers/devices
+- Polite delays between requests to reduce server load
+- Fetching and parsing the site's robots.txt to respect crawling rules
+- Checking whether a given URL is allowed to be crawled according to robots.txt
+
+Functions:
+
+1. getHeaders()
+   Returns a dictionary with randomized HTTP headers to simulate requests from various popular browsers and devices.
+
+   Parameters:
+     None
+   Returns:
+     dict — HTTP headers including a random User-Agent and Accept-Language
+
+2. sleepRandom(minSec=2.0, maxSec=5.0)
+   Pauses execution for a random duration between minSec and maxSec seconds to mimic human browsing behavior.
+
+   Parameters:
+     minSec (float) — minimum sleep time in seconds (default 2.0)
+     maxSec (float) — maximum sleep time in seconds (default 5.0)
+   Returns:
+     None
+
+3. getRobotsParser(baseUrl)
+   Downloads and parses the robots.txt file of the domain extracted from baseUrl.
+
+   Parameters:
+     baseUrl (str) — the base URL of the website to crawl
+   Returns:
+     RobotFileParser object that can be queried to check URL permissions
+   Notes:
+     Prints a warning if robots.txt cannot be fetched, but does not raise an exception
+
+4. isUrlAllowed(url, rp)
+   Checks whether the given url is allowed to be crawled according to the robots.txt rules parsed in rp.
+
+   Parameters:
+     url (str) — the full URL to check
+     rp (RobotFileParser) — the parser object returned from getRobotsParser
+   Returns:
+     bool — True if crawling is allowed, False otherwise
+
+Usage example:
+
+from utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
+
+baseUrl = 'https://example.com'
+rp = getRobotsParser(baseUrl)
+
+if isUrlAllowed(baseUrl, rp):
+    headers = getHeaders()
+    # Make HTTP request with headers here
+    sleepRandom()
+else:
+    print("Crawling disallowed by robots.txt")
+########################################################################################################
