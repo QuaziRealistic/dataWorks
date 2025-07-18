@@ -7,10 +7,10 @@ from scraping.src import scraper
 
 def main():
 
-    #print("Starting crawler test on OpenLibrary.org...")
-    #crawler.crawl(crawler.baseUrl)
+    print("Starting crawler test on OpenLibrary.org...")
+    crawler.crawl(crawler.baseUrl)
 
-    #print("\nCrawler finished.")
+    print("\nCrawler finished.")
 
     print("\nStarting scraper...")
     scraper.scrapeAll()   
