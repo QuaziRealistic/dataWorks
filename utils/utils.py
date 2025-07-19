@@ -14,6 +14,15 @@ userAgents = [
     'Mozilla/5.0 (Android 13; Mobile; rv:115.0) Gecko/115.0 Firefox/115.0',
 ]
 
+def isInformationalUrl(url):
+
+    blacklist_keywords = [
+        "about", "faq", "contact", "help", "support", "terms", "privacy", "legal",
+        "donate", "volunteer", "news", "blog", "jobs", "staff", "history", "press",
+        "policy", "project"
+    ]
+    path = urlparse(url).path.lower()
+    return any(f"/{kw}" in path or path.endswith(kw) for kw in blacklist_keywords)
 
 def getHeaders():
     return {
@@ -37,3 +46,10 @@ def getRobotsParser(baseUrl):
 
 def isUrlAllowed(url, rp):
     return rp.can_fetch("*", url)
+
+
+#____________________________________________________
+
+
+
+#utils.py______________________________________________

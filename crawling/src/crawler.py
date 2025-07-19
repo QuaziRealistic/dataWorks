@@ -2,7 +2,7 @@ import os, requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from collections import deque
-from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
+from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed, isInformationalUrl
 from config import baseUrl, maxPages, maxDepth, allowedDomains
 
 outputFilePath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "foundLinks.txt")
@@ -43,8 +43,13 @@ def crawl(startUrl):
         for aTag in soup.find_all("a", href=True):
             href = aTag["href"]
             absUrl = urljoin(currentUrl, href)
-            if isSameDomain(baseUrl, absUrl) and absUrl not in visitedUrls and isUrlAllowed(absUrl, robotsParser):
-                queue.append((absUrl, depth + 1))
+            if (
+                isSameDomain(baseUrl, absUrl)
+                and absUrl not in visitedUrls
+                and isUrlAllowed(absUrl, robotsParser)
+                and not isInformationalUrl(absUrl)
+            ):
+                queue.append((absUrl, depth + 1))        
 
         sleepRandom(2, 5)
 

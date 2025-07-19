@@ -6,9 +6,9 @@ from config import fileExtension
 from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
 from utils.fileUtils import getFileLinks, downloadFile
 
-baseDir = os.path.dirname(os.path.dirname(__file__))
-dataDir = os.path.join(baseDir, "data")
-fileDir = os.path.join(dataDir, fileExtension.strip(".") + "s")
+baseDir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+dataDir = os.path.join(baseDir, "scraping", "data")
+fileDir = "/home/professor/Documents/scrapedDocs"
 os.makedirs(fileDir, exist_ok=True)
 
 linksFile = os.path.join(baseDir, "crawling", "data", "foundLinks.txt")
