@@ -1,18 +1,37 @@
 def getFileLinks(soup, baseUrl, extension):
     from urllib.parse import urljoin
-    return [urljoin(baseUrl, a["href"]) for a in soup.find_all("a", href=True) if extension.lower() in a["href"].lower()]
+    links = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if ".epub" in href.lower():  # не строгое окончание, а вхождение
+            full_url = urljoin(baseUrl, href)
+            links.append(full_url)
+    return links
 
 def downloadFile(fileUrl, saveDir, headers):
     import os, requests
     from urllib.parse import urlparse
+
     try:
-        response = requests.get(fileUrl, headers=headers, timeout=10)
+        # follow redirects (default=True)
+        response = requests.get(fileUrl, headers=headers, timeout=10, allow_redirects=True)
         response.raise_for_status()
-        fileName = os.path.basename(urlparse(fileUrl).path)
-        filePath = os.path.join(saveDir, fileName)
-        with open(filePath, "wb") as f:
+
+        # получим финальный URL после всех редиректов
+        final_url = response.url
+        file_name = os.path.basename(urlparse(final_url).path)
+
+        # если имя не оканчивается на .epub — добавим
+        if not file_name.endswith(".epub"):
+            file_name += ".epub"
+
+        file_path = os.path.join(saveDir, file_name)
+        with open(file_path, "wb") as f:
             f.write(response.content)
-        return fileName
+
+        print(f"[Downloaded] {fileUrl} → {file_name}")
+        return file_name
+
     except Exception as e:
         print(f"[Error downloading {fileUrl}]: {e}")
         return None
