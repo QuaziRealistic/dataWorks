@@ -1,4 +1,7 @@
-import os, json, requests
+# python/src/scraper.py
+import os
+import json
+import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from time import time
@@ -7,11 +10,11 @@ from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
 from utils.fileUtils import getFileLinks, downloadFile
 
 baseDir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-dataDir = os.path.join(baseDir, "scraping", "data")
-fileDir = "/home/professor/Documents/scrapedDocs"
+dataDir = os.path.join(baseDir, "data")
+fileDir = os.path.join(baseDir, "scraped")
 os.makedirs(fileDir, exist_ok=True)
 
-linksFile = os.path.join(baseDir, "crawling", "data", "foundLinks.txt")
+linksFile = os.path.join(baseDir, "data", "rawUrls.csv")
 outputFile = os.path.join(dataDir, f"scraped{fileExtension.strip('.')}.json")
 
 def scrapePage(url, robotsParser):
@@ -39,6 +42,10 @@ def scrapePage(url, robotsParser):
         return None
 
 def scrapeAll():
+    if not os.path.exists(linksFile):
+        print(f"[Error] Links file not found: {linksFile}")
+        return
+
     with open(linksFile, "r", encoding="utf-8") as f:
         urls = [line.strip() for line in f if line.strip()]
     if not urls:

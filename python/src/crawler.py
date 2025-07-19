@@ -1,11 +1,13 @@
-import os, requests
+# python/src/crawler.py
+import os
+import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from collections import deque
-from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed, isInformationalUrl
+from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
 from config import baseUrl, maxPages, maxDepth, allowedDomains
 
-outputFilePath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "foundLinks.txt")
+outputFilePath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "crawlLog.csv")
 visitedUrls = set()
 
 def isSameDomain(url1, url2):
@@ -16,7 +18,7 @@ def crawl(startUrl):
     queue = deque([(startUrl, 0)])
     os.makedirs(os.path.dirname(outputFilePath), exist_ok=True)
     with open(outputFilePath, "w", encoding="utf-8") as f:
-        pass
+        f.write("url,depth\n")
 
     while queue and len(visitedUrls) < maxPages:
         currentUrl, depth = queue.popleft()
@@ -37,19 +39,17 @@ def crawl(startUrl):
 
         visitedUrls.add(currentUrl)
         with open(outputFilePath, "a", encoding="utf-8") as f:
-            f.write(currentUrl + "\n")
+            f.write(f"{currentUrl},{depth}\n")
 
         soup = BeautifulSoup(html, "html.parser")
         for aTag in soup.find_all("a", href=True):
             href = aTag["href"]
             absUrl = urljoin(currentUrl, href)
-            if (
-                isSameDomain(baseUrl, absUrl)
-                and absUrl not in visitedUrls
-                and isUrlAllowed(absUrl, robotsParser)
-                and not isInformationalUrl(absUrl)
-            ):
-                queue.append((absUrl, depth + 1))        
+            if isSameDomain(baseUrl, absUrl) and absUrl not in visitedUrls and isUrlAllowed(absUrl, robotsParser):
+                # Здесь можно добавить фильтр для игнорирования разделов, например:
+                if any(skipWord in absUrl.lower() for skipWord in ["faq", "about", "contact", "help", "terms", "privacy"]):
+                    continue
+                queue.append((absUrl, depth + 1))
 
         sleepRandom(2, 5)
 
