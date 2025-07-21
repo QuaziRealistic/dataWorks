@@ -14,7 +14,13 @@ os.makedirs(fileDir, exist_ok=True)
 linksFile = os.path.join(baseDir, "crawling", "data", "foundLinks.txt")
 outputFile = os.path.join(dataDir, f"scraped{fileExtension.strip('.')}.json")
 
-def scrapePage(url, robotsParser):
+def getDownloadedFiles(fileDir):
+    try:
+        return set(os.listdir(fileDir))
+    except FileNotFoundError:
+        return set()
+
+def scrapePage(url, robotsParser, downloadedFiles):
     try:
         response = requests.get(url, headers=getHeaders(), timeout=10)
         response.raise_for_status()
@@ -28,9 +34,15 @@ def scrapePage(url, robotsParser):
                 print(f"[Blocked by robots.txt] Skipping: {fileUrl}")
                 continue
 
-            fileName = downloadFile(fileUrl, fileDir, getHeaders())
-            if fileName:
-                downloaded.append({"url": fileUrl, "savedAs": fileName})
+            fileName = os.path.basename(fileUrl)
+            if fileName in downloadedFiles:
+                print(f"[Already downloaded] Skipping: {fileName}")
+                continue
+
+            savedName = downloadFile(fileUrl, fileDir, getHeaders())
+            if savedName:
+                downloaded.append({"url": fileUrl, "savedAs": savedName})
+                downloadedFiles.add(savedName)
 
         return {"sourceUrl": url, "files": downloaded, "timestamp": time()}
 
@@ -48,13 +60,15 @@ def scrapeAll():
     robotsParser = getRobotsParser(urls[0])
     scraped = []
 
+    downloadedFiles = getDownloadedFiles(fileDir)
+
     for i, url in enumerate(urls, 1):
         if not isUrlAllowed(url, robotsParser):
             print(f"[Blocked by robots.txt] {url}")
             continue
 
         print(f"[{i}/{len(urls)}] Scraping: {url}")
-        data = scrapePage(url, robotsParser)
+        data = scrapePage(url, robotsParser, downloadedFiles)
         if data and data["files"]:
             scraped.append(data)
 
