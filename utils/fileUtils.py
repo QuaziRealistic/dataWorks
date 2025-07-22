@@ -1,9 +1,12 @@
+
+
+
 def getFileLinks(soup, baseUrl, extension):
     from urllib.parse import urljoin
     links = []
     for a in soup.find_all("a", href=True):
         href = a["href"]
-        if ".epub" in href.lower():  # не строгое окончание, а вхождение
+        if extension in href.lower():
             full_url = urljoin(baseUrl, href)
             links.append(full_url)
     return links

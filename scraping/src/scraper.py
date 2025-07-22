@@ -5,6 +5,10 @@ from time import time
 from config import fileExtension
 from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
 from utils.fileUtils import getFileLinks, downloadFile
+from scraping.src.extractors import (
+    generate_code, extract_title, extract_sector, extract_content,
+    extract_source_title, extract_download_url, extract_metadata, extract_id_from_url
+)
 
 baseDir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 dataDir = os.path.join(baseDir, "scraping", "data")
@@ -44,7 +48,22 @@ def scrapePage(url, robotsParser, downloadedFiles):
                 downloaded.append({"url": fileUrl, "savedAs": savedName})
                 downloadedFiles.add(savedName)
 
-        return {"sourceUrl": url, "files": downloaded, "timestamp": time()}
+        return {
+    "code": generate_code(url),
+    "tags_en": [],
+    "title_en": extract_title(soup),
+    "sector_en": extract_sector(soup),
+    "jurisdiction_en": "UAE",
+    "source_url_en": url,
+    "content_en": extract_content(soup),
+    "metadata_en": extract_metadata(soup),
+    "content_source_title_en": extract_source_title(soup),
+    "content_source_en": "Federal",
+    "file_url_en": extract_download_url(soup),
+    "source_id": extract_id_from_url(url),
+    "files": downloaded
+}
+
 
     except Exception as e:
         print(f"[Error scraping {url}]: {e}")
