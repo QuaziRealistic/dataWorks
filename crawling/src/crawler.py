@@ -16,7 +16,7 @@ def crawl(startUrl):
     queue = deque([(startUrl, 0)])
     os.makedirs(os.path.dirname(outputFilePath), exist_ok=True)
 
-    maxAllowedDepth = min(maxDepth, 6)  # ограничиваем глубину 6
+    maxAllowedDepth = min(maxDepth, 6) 
 
     with open(outputFilePath, "w", encoding="utf-8") as f:
         pass

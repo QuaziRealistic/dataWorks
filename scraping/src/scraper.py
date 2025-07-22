@@ -30,6 +30,23 @@ def scrapePage(url, robotsParser, downloadedFiles):
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
+        # Сначала — извлекаем информацию со страницы
+        data = {
+            "code": generate_code(url),
+            "tags_en": [],
+            "title_en": extract_title(soup),
+            "sector_en": extract_sector(soup),
+            "jurisdiction_en": "UAE",
+            "source_url_en": url,
+            "content_en": extract_content(soup),
+            "metadata_en": extract_metadata(soup),
+            "content_source_title_en": extract_source_title(soup),
+            "content_source_en": "Federal",
+            "file_url_en": extract_download_url(soup),
+            "source_id": extract_id_from_url(url)
+        }
+
+        # Затем — скачиваем файлы (если есть ссылки и robots.txt разрешает)
         fileUrls = getFileLinks(soup, url, fileExtension)
         downloaded = []
 
@@ -48,26 +65,15 @@ def scrapePage(url, robotsParser, downloadedFiles):
                 downloaded.append({"url": fileUrl, "savedAs": savedName})
                 downloadedFiles.add(savedName)
 
-        return {
-    "code": generate_code(url),
-    "tags_en": [],
-    "title_en": extract_title(soup),
-    "sector_en": extract_sector(soup),
-    "jurisdiction_en": "UAE",
-    "source_url_en": url,
-    "content_en": extract_content(soup),
-    "metadata_en": extract_metadata(soup),
-    "content_source_title_en": extract_source_title(soup),
-    "content_source_en": "Federal",
-    "file_url_en": extract_download_url(soup),
-    "source_id": extract_id_from_url(url),
-    "files": downloaded
-}
+        # При желании можно вернуть info о загруженных файлах
+        data["files"] = downloaded
 
+        return data
 
     except Exception as e:
         print(f"[Error scraping {url}]: {e}")
         return None
+
 
 def scrapeAll():
     with open(linksFile, "r", encoding="utf-8") as f:

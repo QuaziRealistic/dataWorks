@@ -16,15 +16,15 @@ def downloadFile(fileUrl, saveDir, headers):
     from urllib.parse import urlparse
 
     try:
-        # follow redirects (default=True)
+        
         response = requests.get(fileUrl, headers=headers, timeout=10, allow_redirects=True)
         response.raise_for_status()
 
-        # получим финальный URL после всех редиректов
+        
         final_url = response.url
         file_name = os.path.basename(urlparse(final_url).path)
 
-        # если имя не оканчивается на .epub — добавим
+        
         if not file_name.endswith(".epub"):
             file_name += ".epub"
 
@@ -32,7 +32,7 @@ def downloadFile(fileUrl, saveDir, headers):
         with open(file_path, "wb") as f:
             f.write(response.content)
 
-        print(f"[Downloaded] {fileUrl} → {file_name}")
+        print(f"[Downloaded] {fileUrl} -> {file_name}")
         return file_name
 
     except Exception as e:
