@@ -4,7 +4,7 @@ from crawling.src import crawler
 from scraping.src import scraper
 
 def main():
-    crawler.crawl(crawler.baseUrl)
+    #crawler.crawl(crawler.baseUrl)
     scraper.scrapeAll()
 
 if __name__ == "__main__":

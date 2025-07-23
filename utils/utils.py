@@ -4,6 +4,50 @@ import requests
 from urllib.robotparser import RobotFileParser
 from urllib.parse import urlparse
 
+
+
+ignoreSections = [
+    "about", "our-operations", "licensing-news-and-publications", "research-and-statistics",
+    "contact-us", "home", "consumer", "forex", "eibor", "open-data", "digital-participation", "e-service"
+]
+
+allowedSections = [
+    "all-licensed-financial-institutions", "banking", "insurance", "other-regulated-entities"
+]
+
+def shouldCrawlUrl(url, baseUrl):
+    from urllib.parse import urlparse
+
+    parsedUrl = urlparse(url)
+    path = parsedUrl.path.lower()
+
+    
+    if url.rstrip("/") == baseUrl.rstrip("/"):
+        return True
+
+    
+    if "/ar/" in path:
+        return False
+
+    
+    if "/en/" not in path:
+        return False
+
+    
+    for ignore in ignoreSections:
+        if ignore in path:
+            return False
+
+    
+    for allow in allowedSections:
+        if allow in path:
+            return True
+
+    return True
+
+
+
+
 userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0',

@@ -1,7 +1,10 @@
-import os, json, requests
+import os
+import json
+import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-from time import time
+from time import sleep
+from random import uniform
 from config import fileExtension
 from utils.utils import getHeaders, sleepRandom, getRobotsParser, isUrlAllowed
 from utils.fileUtils import getFileLinks, downloadFile
@@ -16,7 +19,9 @@ fileDir = "/home/professor/Documents/scrapedDocs"
 os.makedirs(fileDir, exist_ok=True)
 
 linksFile = os.path.join(baseDir, "crawling", "data", "foundLinks.txt")
+progressFile = os.path.join(dataDir, "scrape_progress.txt")
 outputFile = os.path.join(dataDir, f"scraped{fileExtension.strip('.')}.json")
+
 
 def getDownloadedFiles(fileDir):
     try:
@@ -24,13 +29,26 @@ def getDownloadedFiles(fileDir):
     except FileNotFoundError:
         return set()
 
+
+def readProgress():
+    if not os.path.exists(progressFile):
+        return 0
+    with open(progressFile, "r") as f:
+        pos = f.read()
+        return int(pos) if pos.isdigit() else 0
+
+
+def writeProgress(pos):
+    with open(progressFile, "w") as f:
+        f.write(str(pos))
+
+
 def scrapePage(url, robotsParser, downloadedFiles):
     try:
-        response = requests.get(url, headers=getHeaders(), timeout=10)
+        response = requests.get(url, headers=getHeaders(), timeout=(5, 15))
         response.raise_for_status()
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Сначала — извлекаем информацию со страницы
         data = {
             "code": generate_code(url),
             "tags_en": [],
@@ -46,7 +64,6 @@ def scrapePage(url, robotsParser, downloadedFiles):
             "source_id": extract_id_from_url(url)
         }
 
-        # Затем — скачиваем файлы (если есть ссылки и robots.txt разрешает)
         fileUrls = getFileLinks(soup, url, fileExtension)
         downloaded = []
 
@@ -65,9 +82,7 @@ def scrapePage(url, robotsParser, downloadedFiles):
                 downloaded.append({"url": fileUrl, "savedAs": savedName})
                 downloadedFiles.add(savedName)
 
-        # При желании можно вернуть info о загруженных файлах
         data["files"] = downloaded
-
         return data
 
     except Exception as e:
@@ -82,27 +97,39 @@ def scrapeAll():
         print("[No URLs to scrape]")
         return
 
-    robotsParser = getRobotsParser(urls[0])
-    scraped = []
+    start_pos = readProgress()
+    if start_pos >= len(urls):
+        print("[Info] All URLs have been processed.")
+        return
 
+    robotsParser = getRobotsParser(urls[0])
     downloadedFiles = getDownloadedFiles(fileDir)
 
-    for i, url in enumerate(urls, 1):
+    scraped = []
+    if os.path.exists(outputFile):
+        with open(outputFile, "r", encoding="utf-8") as f:
+            scraped = json.load(f)
+
+    for i in range(start_pos, len(urls)):
+        url = urls[i]
+
         if not isUrlAllowed(url, robotsParser):
             print(f"[Blocked by robots.txt] {url}")
             continue
 
-        print(f"[{i}/{len(urls)}] Scraping: {url}")
+        print(f"[{i+1}/{len(urls)}] Scraping: {url}")
         data = scrapePage(url, robotsParser, downloadedFiles)
         if data and data["files"]:
             scraped.append(data)
+            
+        with open(outputFile, "w", encoding="utf-8") as f:
+            json.dump(scraped, f, indent=2, ensure_ascii=False)
+        writeProgress(i + 1)
 
         sleepRandom(2, 5)
 
-    with open(outputFile, "w", encoding="utf-8") as f:
-        json.dump(scraped, f, indent=2, ensure_ascii=False)
+    print(f"\nCompleted scraping all URLs. Results saved to {outputFile}")
 
-    print(f"\nExtracted from {len(scraped)} pages. Saved to {outputFile}")
 
 if __name__ == "__main__":
     scrapeAll()

@@ -1,5 +1,5 @@
-baseUrl = "https://rulebook.centralbank.ae/"
+baseUrl = "https://rulebook.centralbank.ae/en/"
 allowedDomains = ["rulebook.centralbank.ae/en/"]
 fileExtension = ".pdf"
-maxPages = 200
+maxPages = 500
 maxDepth = 6
